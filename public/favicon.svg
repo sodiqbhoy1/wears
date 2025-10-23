@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#CA2C33"/>
+  
+  <!-- Simple plate with food -->
+  <ellipse cx="16" cy="20" rx="8" ry="3" fill="white" opacity="0.9"/>
+  
+  <!-- Food items -->
+  <circle cx="13" cy="18" r="1.5" fill="#FFD23F"/>
+  <circle cx="19" cy="18" r="1.5" fill="#FF6B35"/>
+  <circle cx="16" cy="17" r="2" fill="white"/>
+  
+  <!-- Steam -->
+  <path d="M 12 14 Q 13 11 12 8" stroke="white" stroke-width="1" fill="none" opacity="0.7"/>
+  <path d="M 16 13 Q 17 10 16 7" stroke="white" stroke-width="1" fill="none" opacity="0.7"/>
+  <path d="M 20 14 Q 21 11 20 8" stroke="white" stroke-width="1" fill="none" opacity="0.7"/>
+  
+  <!-- Letters -->
+  <text x="6" y="28" font-size="8" font-weight="bold" fill="white" font-family="Arial, sans-serif">F</text>
+  <text x="22" y="28" font-size="8" font-weight="bold" fill="white" font-family="Arial, sans-serif">J</text>
+</svg>
