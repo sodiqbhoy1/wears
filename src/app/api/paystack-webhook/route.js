@@ -78,38 +78,37 @@ export async function POST(req) {
       
       // Send order confirmation email (non-blocking) and mark flag
       if (order.customer?.email) {
-  // Attempting to send webhook order confirmation email to customer
-        sendOrderConfirmationEmail(order)
-          .then(async (result) => {
-            // Webhook email result
-            if (result?.success) {
-              if (OrderModel) {
-                await OrderModel.updateOne({ _id: order._id }, { $set: { confirmationEmailSent: true, confirmationEmailSentAt: new Date() } });
-              } else {
-                await db.collection('orders').updateOne(
-                  { _id: order._id },
-                  { $set: { confirmationEmailSent: true, confirmationEmailSentAt: new Date() } }
-                );
-              }
-              // Webhook email flag updated for order
+        try {
+          // Attempting to send webhook order confirmation email to customer
+          const result = await sendOrderConfirmationEmail(order);
+          // Webhook email result
+          if (result?.success) {
+            if (OrderModel) {
+              await OrderModel.updateOne({ _id: order._id }, { $set: { confirmationEmailSent: true, confirmationEmailSentAt: new Date() } });
             } else {
-              // Webhook email failed but order saved
               await db.collection('orders').updateOne(
                 { _id: order._id },
-                { $set: { confirmationEmailError: result?.error || 'Unknown error', confirmationEmailSentAt: new Date() } }
+                { $set: { confirmationEmailSent: true, confirmationEmailSentAt: new Date() } }
               );
             }
-          })
-          .catch(err => {
-            console.error('❌ Failed to send order confirmation email via webhook:', err);
-            // Update order with email error for debugging
-            db.collection('orders').updateOne(
+            // Webhook email flag updated for order
+          } else {
+            // Webhook email failed but order saved
+            await db.collection('orders').updateOne(
               { _id: order._id },
-              { $set: { confirmationEmailError: err.message, confirmationEmailSentAt: new Date() } }
-            ).catch(dbErr => console.error('Failed to update email error:', dbErr));
-          });
+              { $set: { confirmationEmailError: result?.error || 'Unknown error', confirmationEmailSentAt: new Date() } }
+            );
+          }
+        } catch (err) {
+          console.error('❌ Failed to send order confirmation email via webhook:', err);
+          // Update order with email error for debugging
+          await db.collection('orders').updateOne(
+            { _id: order._id },
+            { $set: { confirmationEmailError: err.message, confirmationEmailSentAt: new Date() } }
+          ).catch(dbErr => console.error('Failed to update email error:', dbErr));
+        }
       } else {
-  // No customer email found in webhook order, skipping email
+        // No customer email found in webhook order, skipping email
       }
       
   // Order created via webhook

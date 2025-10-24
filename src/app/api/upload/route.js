@@ -1,7 +1,28 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { verifyAdminToken } from '@/lib/auth';
+import cloudinary from '@/lib/cloudinary';
+
+// Helper to stream file buffer to Cloudinary
+const streamToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'wears', // Optional: organize uploads in a folder
+        // You can add more upload options here, e.g., transformations
+      },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result);
+      }
+    );
+
+    file.arrayBuffer().then(buffer => {
+      stream.end(Buffer.from(buffer));
+    });
+  });
+};
 
 export async function POST(req) {
   try {
@@ -36,26 +57,14 @@ export async function POST(req) {
       }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const ext = (file.name || 'upload').split('.').pop().toLowerCase();
-    const filename = `menu_${Date.now()}.${ext}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    
-    // Ensure upload directory exists
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    const filepath = path.join(uploadDir, filename);
-    fs.writeFileSync(filepath, buffer);
-    const url = `/uploads/${filename}`;
+    // Upload to Cloudinary
+    const result = await streamToCloudinary(file);
 
-  // Image uploaded successfully
-    return NextResponse.json({ ok: true, url });
+    // Image uploaded successfully to Cloudinary
+    return NextResponse.json({ ok: true, url: result.secure_url });
     
   } catch (error) {
-  console.error('Upload error:', error);
+    console.error('Upload error:', error);
     return NextResponse.json({ 
       ok: false, 
       error: 'Failed to upload file: ' + error.message 
