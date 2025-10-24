@@ -74,6 +74,14 @@ export default function AdminLogin() {
         <div className="mt-3 text-right">
           <Link href="/admin/forgot-password" className="text-sm text-[var(--brand)] underline">Forgot password?</Link>
         </div>
+        <div className="mt-3 text-center">
+          <p className="text-sm">
+            Don&apos;t have an account?{' '}
+            <Link href="/admin/signup" className="text-[var(--brand)] underline">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </form>
     </main>
     </>

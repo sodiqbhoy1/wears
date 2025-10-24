@@ -4,8 +4,8 @@ import { CartProvider } from '@/context/cart';
 import { NotificationProvider } from '@/context/notification';
 
 export const metadata = {
-  title: "Food Joint",
-  description: "Your spot to enjoy",
+  title: "Wear House",
+  description: "feel good, and do good.",
   icons: {
     icon: '/favicon.svg',
     apple: '/icon-192.svg',

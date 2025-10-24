@@ -8,16 +8,25 @@ export default function AdminLayout({ children, activePage = 'Home' }) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null;
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
 
+  const publicAdminPaths = [
+    '/admin/login',
+    '/admin/signup',
+    '/admin/forgot-password',
+    '/admin/reset-password'
+  ];
+
+  const isPublicPage = publicAdminPaths.some(p => pathname.startsWith(p));
+
   // Don't show the sidebar on the login (or other public admin) pages.
-  const showSidebar = Boolean(token) && !pathname.startsWith('/admin/login');
+  const showSidebar = Boolean(token) && !isPublicPage;
 
   useEffect(() => {
-    // If there's no token and we're not already on the login page, redirect to login.
-    if (!token && !pathname.startsWith('/admin/login')) {
+    // If there's no token and we're not on a public page, redirect to login.
+    if (!token && !isPublicPage) {
       window.location.href = '/admin/login';
       return;
     }
-  }, [token, pathname]);
+  }, [token, pathname, isPublicPage]);
 
   return (
     <div className="min-h-screen flex bg-gray-50">
