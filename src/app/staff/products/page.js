@@ -145,7 +145,7 @@ export default function StaffProductsPage() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+        <div className={`fixed top-4 right-4 z-50 px-4 sm:px-6 py-3 rounded-lg shadow-lg text-sm sm:text-base ${
           toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
         } text-white`}>
           {toast.message}
@@ -153,14 +153,14 @@ export default function StaffProductsPage() {
       )}
 
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-3xl font-bold text-gray-800">Add Product</h1>
-        <p className="text-gray-600 mt-2">Add new products to the inventory</p>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Add Product</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-2">Add new products to the inventory</p>
       </div>
 
       {/* Add Product Form */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Product Information</h2>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Product Information</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -277,7 +277,7 @@ export default function StaffProductsPage() {
             </div>
 
             {form.images.length > 0 && (
-              <div className="grid grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
                 {form.images.map((img, i) => (
                   <div key={i} className="relative group">
                     <Image
@@ -285,7 +285,7 @@ export default function StaffProductsPage() {
                       alt={`Product ${i + 1}`}
                       width={150}
                       height={150}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-24 sm:h-32 object-cover rounded-lg"
                     />
                     <button
                       type="button"
@@ -301,11 +301,11 @@ export default function StaffProductsPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex gap-4">
+        <div className="mt-6 flex flex-col sm:flex-row gap-4">
           <button
             onClick={save}
             disabled={loading || imageUploading}
-            className="px-6 py-3 bg-[var(--brand)] text-white rounded-lg font-semibold hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-3 bg-[var(--brand)] text-white rounded-lg font-semibold hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && <FiLoader className="animate-spin" />}
             {loading ? 'Adding Product...' : 'Add Product'}
@@ -321,9 +321,11 @@ export default function StaffProductsPage() {
       </div>
 
       {/* Products List (View Only) */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Current Products</h2>
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Current Products</h2>
+        
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -372,6 +374,41 @@ export default function StaffProductsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {items.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">No products found</div>
+          ) : (
+            items.map((item) => (
+              <div key={item._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex gap-4">
+                  {item.images && item.images[0] && (
+                    <Image
+                      src={item.images[0]}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      className="rounded-lg object-cover"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-800 mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{item.category || 'N/A'}</p>
+                    <p className="text-lg font-semibold text-gray-800 mb-2">₦{item.basePrice?.toLocaleString()}</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                      (item.variants?.[0]?.quantity || 0) > 0 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {item.variants?.[0]?.quantity || 0} in stock
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

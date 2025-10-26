@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { FiMenu, FiX } from 'react-icons/fi';
 
 export default function StaffSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('staffToken');
@@ -23,7 +25,26 @@ export default function StaffSidebar() {
 
   return (
     <>
-      <aside className="w-64 bg-gradient-to-b from-indigo-600 to-blue-700 text-white min-h-screen fixed left-0 top-0 z-30">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
+      >
+        {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`w-64 bg-gradient-to-b from-indigo-600 to-blue-700 text-white min-h-screen fixed left-0 top-0 z-40 transition-transform duration-300 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         <div className="p-6 border-b border-indigo-500">
           <h1 className="text-2xl font-bold">WearHouse</h1>
           <p className="text-sm text-indigo-200 mt-1">Staff Portal</p>
@@ -34,6 +55,7 @@ export default function StaffSidebar() {
             <Link
               key={item.path}
               href={item.path}
+              onClick={() => setIsOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
                 pathname === item.path
                   ? 'bg-white text-indigo-700 shadow-lg'

@@ -149,30 +149,33 @@ export default function StaffOrdersPage() {
       )}
 
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-3xl font-bold text-gray-800">Orders Management</h1>
-        <p className="text-gray-600 mt-2">View and update order status</p>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Orders Management</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-2">View and update order status</p>
       </div>
 
       {/* Filter */}
       <div className="bg-white rounded-lg shadow-md p-4">
-        <label className="text-sm font-medium text-gray-700">Filter by Status:</label>
-        <select
-          value={statusFilter}
-          onChange={handleFilterChange}
-          className="ml-3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[var(--brand)]"
-        >
-          <option value="all">All Orders</option>
-          <option value="pending">Pending</option>
-          <option value="preparing">Preparing</option>
-          <option value="ready">Ready</option>
-          <option value="delivered">Delivered</option>
-        </select>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0">
+          <label className="text-sm font-medium text-gray-700">Filter by Status:</label>
+          <select
+            value={statusFilter}
+            onChange={handleFilterChange}
+            className="sm:ml-3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[var(--brand)] w-full sm:w-auto"
+          >
+            <option value="all">All Orders</option>
+            <option value="pending">Pending</option>
+            <option value="preparing">Preparing</option>
+            <option value="ready">Ready</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
       </div>
 
       {/* Orders Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -228,14 +231,49 @@ export default function StaffOrdersPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden divide-y divide-gray-200">
+          {orders.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">No orders found</div>
+          ) : (
+            orders.map((order) => (
+              <div key={order._id} className="p-4 hover:bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="text-xs text-gray-500 font-mono">#{order.orderId || order._id.slice(-8)}</p>
+                    <p className="text-sm font-medium text-gray-800 mt-1">{order.customer?.name || 'N/A'}</p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status || 'pending')}`}>
+                    {getStatusIcon(order.status || 'pending')}
+                    {(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <div>
+                    <p className="text-lg font-semibold text-gray-800">₦{order.totalAmount?.toLocaleString() || '0'}</p>
+                    <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <button
+                    onClick={() => viewOrderDetails(order)}
+                    className="text-[var(--brand)] hover:text-blue-700 font-medium text-sm flex items-center gap-1 px-3 py-2 border border-[var(--brand)] rounded-lg"
+                  >
+                    <FiEye className="w-4 h-4" />
+                    View
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">Order Details</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex justify-between items-center">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Order Details</h2>
               <button
                 onClick={() => setSelectedOrder(null)}
                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -244,7 +282,7 @@ export default function StaffOrdersPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
               {loadingOrderDetails ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand)] mx-auto"></div>
@@ -253,25 +291,25 @@ export default function StaffOrdersPage() {
               ) : (
                 <>
                   {/* Order Status Progress */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Status</h3>
-                    <div className="flex items-center justify-between">
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Order Status</h3>
+                    <div className="flex items-center justify-between overflow-x-auto pb-4">
                       {getStatusSteps(selectedOrder.status || 'pending').map((step, index, array) => (
-                        <div key={step.key} className="flex items-center flex-1">
+                        <div key={step.key} className="flex items-center flex-1 min-w-[80px]">
                           <div className="flex flex-col items-center">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${
                               step.completed ? 'bg-[var(--brand)] text-white' : 'bg-gray-300 text-gray-600'
                             }`}>
-                              <step.icon className="w-5 h-5" />
+                              <step.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
-                            <p className={`mt-2 text-xs font-medium text-center ${
+                            <p className={`mt-2 text-[10px] sm:text-xs font-medium text-center ${
                               step.active ? 'text-[var(--brand)]' : 'text-gray-600'
                             }`}>
                               {step.label}
                             </p>
                           </div>
                           {index < array.length - 1 && (
-                            <div className={`flex-1 h-1 mx-2 ${
+                            <div className={`flex-1 h-1 mx-1 sm:mx-2 ${
                               step.completed ? 'bg-[var(--brand)]' : 'bg-gray-300'
                             }`} />
                           )}
@@ -284,7 +322,7 @@ export default function StaffOrdersPage() {
                         <button
                           key={status}
                           onClick={() => updateOrderStatus(selectedOrder._id, status)}
-                          className={`px-4 py-2 rounded-lg font-medium text-sm ${
+                          className={`px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm ${
                             selectedOrder.status === status
                               ? 'bg-[var(--brand)] text-white'
                               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -297,8 +335,8 @@ export default function StaffOrdersPage() {
                   </div>
 
                   {/* Customer Information */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Customer Information</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Customer Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-start gap-3">
                         <FiMail className="text-[var(--brand)] mt-1" />

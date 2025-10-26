@@ -4,19 +4,19 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import StaffSidebar from '@/components/staff/StaffSidebar';
 
+// Public staff pages that don't require authentication
+const publicStaffPaths = [
+  '/staff/login',
+  '/staff/signup',
+  '/staff/forgot-password',
+  '/staff/reset-password'
+];
+
 export default function StaffLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Public staff pages that don't require authentication
-  const publicStaffPaths = [
-    '/staff/login',
-    '/staff/signup',
-    '/staff/forgot-password',
-    '/staff/reset-password'
-  ];
 
   useEffect(() => {
     const token = localStorage.getItem('staffToken');
@@ -53,7 +53,7 @@ export default function StaffLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <StaffSidebar />
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8 pt-20 lg:pt-8">
         {children}
       </main>
     </div>
