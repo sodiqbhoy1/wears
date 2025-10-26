@@ -1,5 +1,5 @@
 "use client";
-import { FiHome, FiPackage, FiUsers, FiList, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiPackage, FiUsers, FiList, FiLogOut, FiMenu, FiX, FiBell } from 'react-icons/fi';
 import { useState } from 'react';
 import LogoutConfirmModal from '@/components/LogoutConfirmModal';
 
@@ -7,6 +7,7 @@ const links = [
   { name: 'Home', href: '/admin/dashboard', icon: FiHome },
   { name: 'Orders', href: '/admin/orders', icon: FiPackage },
   { name: 'Products', href: '/admin/products', icon: FiList },
+  { name: 'Announcements', href: '/admin/announcements', icon: FiBell },
   { name: 'Riders', href: '/admin/riders', icon: FiUsers },
 ];
 

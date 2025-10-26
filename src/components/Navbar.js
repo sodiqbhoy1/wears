@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import WearHouseLogo from './WearHouseLogo';
+import AnnouncementBanner from './AnnouncementBanner';
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
 
     return (
-        <header style={{ backgroundColor: 'var(--brand)', color: 'var(--background)' }}>
+        <>
+        <AnnouncementBanner />
+        <header style={{ backgroundColor: 'var(--brand)', color: 'var(--background)' }} className="fixed top-0 left-0 right-0 z-40">
             <nav className="max-w-6xl mx-auto flex items-center justify-between py-4 px-6">
                 {/* Logo on the left with home link */}
                 <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-all duration-300 group no-underline">
@@ -22,9 +25,6 @@ export default function Navbar() {
 
                 {/* Links on the right (desktop) */}
                 <ul className="hidden md:flex items-center gap-6 list-none m-0 p-0">
-                    <li className="hover:underline cursor-pointer">
-                        <Link href="/">Home</Link>
-                    </li>
                     <li className="hover:underline cursor-pointer">
                         <Link href="/products">Products</Link>
                     </li>
@@ -51,15 +51,6 @@ export default function Navbar() {
             {open && (
                 <div className="md:hidden bg-[var(--brand)]/95 backdrop-blur-sm text-white border-t border-white/20">
                     <ul className="flex flex-col p-4 gap-3">
-                        <li>
-                            <Link 
-                                href="/" 
-                                onClick={() => setOpen(false)}
-                                className="block py-2 px-3 hover:bg-white/10 rounded transition-colors"
-                            >
-                                Home
-                            </Link>
-                        </li>
                         <li>
                             <Link 
                                 href="/products" 
@@ -91,5 +82,6 @@ export default function Navbar() {
                 </div>
             )}
         </header>
+        </>
     );
 }

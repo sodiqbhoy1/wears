@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { FiSearch, FiPackage, FiClock, FiTruck, FiCheckCircle, FiPhone, FiMail, FiMapPin } from 'react-icons/fi';
-import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export default function TrackOrderPage() {
   const [trackingCode, setTrackingCode] = useState('');
@@ -75,26 +75,13 @@ export default function TrackOrderPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-[var(--brand)]">
-              WearHouse
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/menu" className="text-gray-600 hover:text-[var(--brand)]">
-                Menu
-              </Link>
-              <Link href="/track-order" className="text-[var(--brand)] font-medium">
-                Track Order
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <>
+      <Navbar />
+      
+      {/* Spacer for fixed navbar */}
+      <div className="h-20"></div>
+      
+      <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Track Your Order</h1>
@@ -254,5 +241,6 @@ export default function TrackOrderPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/context/cart';
 import { useRouter } from 'next/navigation';
 import { generateTrackingCode } from '@/lib/trackingUtils';
+import Navbar from '@/components/Navbar';
 
 export default function CheckoutPage() {
   const { items, clear } = useCart();
@@ -137,7 +138,13 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="max-w-3xl mx-auto p-8">
+    <>
+      <Navbar />
+      
+      {/* Spacer for fixed navbar */}
+      <div className="h-20"></div>
+      
+      <main className="max-w-3xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
       <div className="bg-white p-4 rounded shadow-sm">
         <div className="mb-4">
@@ -192,5 +199,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

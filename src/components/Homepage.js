@@ -10,6 +10,9 @@ export default function Homepage() {
     <>
       <Navbar />
       
+      {/* Spacer for fixed navbar */}
+      <div className="h-20"></div>
+      
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background with overlay */}

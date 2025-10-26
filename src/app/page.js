@@ -12,6 +12,8 @@ export const metadata = {
   },
 };
 
+import { redirect } from 'next/navigation';
+
 export default function Home() {
-  return <Homepage />;
+  redirect('/products');
 }

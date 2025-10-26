@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { FiPlus, FiEdit2, FiTrash, FiImage, FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi';
+import { FiEdit2, FiTrash, FiImage, FiCheckCircle, FiXCircle, FiLoader } from 'react-icons/fi';
 // layout is provided by src/app/admin/layout.js
 import { getAuthHeaders, getAuthHeadersFormData } from '@/lib/apiHelpers';
 
@@ -12,7 +12,9 @@ const initialFormState = {
   category: '',
   description: '',
   images: [],
-  variants: [{ color: '', size: '', quantity: '', price: '', image: '' }],
+  quantity: '',
+  color: '',
+  size: '',
 };
 
 export default function AdminProductsPage() {
@@ -22,7 +24,6 @@ export default function AdminProductsPage() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
-  const [variantImageUploading, setVariantImageUploading] = useState({});
 
   const load = async () => {
     setProductsLoading(true);
@@ -63,47 +64,6 @@ export default function AdminProductsPage() {
     setImageUploading(false);
   };
 
-  const onVariantFileChange = async (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setVariantImageUploading(prev => ({ ...prev, [index]: true }));
-
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: getAuthHeadersFormData(),
-        body: fd
-      });
-      const data = await res.json();
-      if (data.ok) {
-        handleVariantChange(index, 'image', data.url);
-      } else {
-        alert('Failed to upload image: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      alert('Failed to upload image: ' + error.message);
-    }
-    setVariantImageUploading(prev => ({ ...prev, [index]: false }));
-  };
-
-  const handleVariantChange = (index, field, value) => {
-    const newVariants = [...form.variants];
-    newVariants[index][field] = value;
-    setForm({ ...form, variants: newVariants });
-  };
-
-  const addVariant = () => {
-    setForm({ ...form, variants: [...form.variants, { color: '', size: '', quantity: '', price: '', image: '' }] });
-  };
-
-  const removeVariant = (index) => {
-    const newVariants = form.variants.filter((_, i) => i !== index);
-    setForm({ ...form, variants: newVariants });
-  };
-
   const save = async () => {
     // Basic client-side validation
     if (!form.name || String(form.name).trim() === '') {
@@ -112,6 +72,10 @@ export default function AdminProductsPage() {
     }
     if (!form.basePrice && form.basePrice !== 0) {
       alert('Base price is required');
+      return;
+    }
+    if (!form.quantity && form.quantity !== 0) {
+      alert('Quantity is required');
       return;
     }
 
@@ -125,15 +89,20 @@ export default function AdminProductsPage() {
     }
     const method = form.id ? 'PUT' : 'POST';
 
-    // Ensure variant quantities and prices are numbers
-    const processedVariants = form.variants.map(v => ({
-      ...v,
-      quantity: Number(v.quantity || 0),
-      price: v.price ? Number(v.price) : undefined,
-      image: v.image || undefined,
-    }));
+    // Create a single variant from the form data
+    const variant = {
+      color: form.color || null,
+      size: form.size || null,
+      quantity: Number(form.quantity || 0),
+      price: form.basePrice ? Number(form.basePrice) : undefined,
+      image: form.images && form.images[0] ? form.images[0] : undefined,
+    };
 
-    const payload = { ...form, variants: processedVariants };
+    const payload = { 
+      ...form, 
+      variants: [variant],
+      quantity: Number(form.quantity || 0)
+    };
     if (form.id) payload._id = form.id;
 
     try {
@@ -162,15 +131,20 @@ export default function AdminProductsPage() {
     }
   };
 
-  const edit = (it) => setForm({
-    id: it._id || it.id,
-    name: it.name,
-    basePrice: it.basePrice,
-    category: it.category,
-    description: it.description,
-    images: it.images || [],
-    variants: (it.variants && it.variants.length > 0) ? it.variants : [{ color: '', size: '', quantity: '', price: '', image: '' }],
-  });
+  const edit = (it) => {
+    const firstVariant = (it.variants && it.variants.length > 0) ? it.variants[0] : {};
+    setForm({
+      id: it._id || it.id,
+      name: it.name,
+      basePrice: it.basePrice,
+      category: it.category,
+      description: it.description,
+      images: it.images || [],
+      quantity: firstVariant.quantity || it.quantity || '',
+      color: firstVariant.color || '',
+      size: firstVariant.size || '',
+    });
+  };
 
   const del = async (id) => {
     await fetch('/api/products?id=' + encodeURIComponent(id), {
@@ -193,23 +167,76 @@ export default function AdminProductsPage() {
             <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">{form.id ? 'Edit Product' : 'Add New Product'}</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <label className="block text-sm font-medium mb-1">Product Name *</label>
+                <input 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.name} 
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))} 
+                  placeholder="e.g., Classic Cotton T-Shirt"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Base Price</label>
-                <input type="number" className="w-full border rounded px-3 py-2 text-sm" value={form.basePrice} onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))} />
+                <label className="block text-sm font-medium mb-1">Price (₦) *</label>
+                <input 
+                  type="number" 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.basePrice} 
+                  onChange={e => setForm(f => ({ ...f, basePrice: e.target.value }))} 
+                  placeholder="e.g., 5000"
+                  required
+                />
               </div>
-              <div className="lg:col-span-2">
+              <div>
                 <label className="block text-sm font-medium mb-1">Category</label>
-                <input className="w-full border rounded px-3 py-2 text-sm" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} placeholder="e.g. shirts, trousers" />
+                <input 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.category} 
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))} 
+                  placeholder="e.g., Shirts, Trousers, Dresses"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Quantity in Stock *</label>
+                <input 
+                  type="number" 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.quantity} 
+                  onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} 
+                  placeholder="e.g., 50"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Color</label>
+                <input 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.color} 
+                  onChange={e => setForm(f => ({ ...f, color: e.target.value }))} 
+                  placeholder="e.g., Red, Blue, Black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Size</label>
+                <input 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.size} 
+                  onChange={e => setForm(f => ({ ...f, size: e.target.value }))} 
+                  placeholder="e.g., S, M, L, XL"
+                />
               </div>
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea className="w-full border rounded px-3 py-2 text-sm" value={form.description} rows={3} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <textarea 
+                  className="w-full border rounded px-3 py-2 text-sm" 
+                  value={form.description} 
+                  rows={3} 
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))} 
+                  placeholder="Describe the product features, material, and other details..."
+                />
               </div>
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium mb-1">Images</label>
+                <label className="block text-sm font-medium mb-1">Product Images</label>
                 <div className="flex flex-col gap-3">
                   <input
                     type="file"
@@ -219,7 +246,7 @@ export default function AdminProductsPage() {
                     className="text-sm"
                     disabled={imageUploading}
                   />
-                  {imageUploading && <div className="flex items-center gap-2 text-blue-600"><FiLoader className="animate-spin" /> Uploading...</div>}
+                  {imageUploading && <div className="flex items-center gap-2 text-blue-600"><FiLoader className="animate-spin" /> Uploading images...</div>}
                   <div className="flex flex-wrap gap-2">
                     {form.images.map((img, index) => (
                       <div key={index} className="relative">
@@ -237,61 +264,17 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="mt-6">
-              <h3 className="text-md font-semibold mb-2">Product Variants</h3>
-              {form.variants.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-4">
-                  {/* Column 1: Image Uploader */}
-                  <div className="flex flex-col items-center">
-                    <label className="block text-sm font-medium mb-1 self-start">Variant Image</label>
-                    {variant.image ? (
-                      <div className="relative w-24 h-24">
-                        <Image src={variant.image} alt="Variant" layout="fill" className="object-cover rounded" />
-                         <button
-                          type="button"
-                          onClick={() => handleVariantChange(index, 'image', '')}
-                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs"
-                        >&times;</button>
-                      </div>
-                    ) : (
-                       <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center">
-                         <FiImage className="text-gray-400" size={32}/>
-                       </div>
-                    )}
-                    <input type="file" accept="image/*" onChange={(e) => onVariantFileChange(e, index)} className="text-sm mt-2" disabled={variantImageUploading[index]}/>
-                    {variantImageUploading[index] && <div className="text-blue-600 text-sm mt-1">Uploading...</div>}
-                  </div>
-
-                  {/* Column 2: Details */}
-                  <div className="md:col-span-2 grid grid-cols-2 gap-3 items-start">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Color</label>
-                      <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} className="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Red" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Size</label>
-                      <input value={variant.size} onChange={e => handleVariantChange(index, 'size', e.target.value)} className="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. M" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Quantity</label>
-                      <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Price (Optional)</label>
-                      <input type="number" value={variant.price} onChange={e => handleVariantChange(index, 'price', e.target.value)} className="w-full border rounded px-3 py-2 text-sm" placeholder="Overrides base price" />
-                    </div>
-                    <div className="col-span-2 flex items-end justify-end">
-                       <button onClick={() => removeVariant(index)} className="text-red-500 p-2"><FiTrash /></button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button onClick={addVariant} className="mt-4 inline-flex items-center gap-2 text-sm text-[var(--brand)]"><FiPlus /> Add Variant</button>
-            </div>
-
-            <div className="mt-6">
               <button onClick={save} disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[var(--brand)] text-white px-6 py-2 rounded text-sm">
                 {loading ? 'Saving...' : (form.id ? 'Update Product' : 'Add Product')}
               </button>
+              {form.id && (
+                <button 
+                  onClick={() => setForm(initialFormState)} 
+                  className="ml-2 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gray-500 text-white px-6 py-2 rounded text-sm"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
 
@@ -306,35 +289,42 @@ export default function AdminProductsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="p-2">Image</th>
-                      <th className="p-2">Name</th>
-                      <th className="p-2">Category</th>
-                      <th className="p-2">Base Price</th>
-                      <th className="p-2">Total Quantity</th>
-                      <th className="p-2">Status</th>
-                      <th className="p-2">Actions</th>
+                      <th className="p-2 text-left w-20">Image</th>
+                      <th className="p-2 text-left">Name</th>
+                      <th className="p-2 text-left">Category</th>
+                      <th className="p-2 text-left">Base Price</th>
+                      <th className="p-2 text-left w-24">Total Qty</th>
+                      <th className="p-2 text-left w-28">Status</th>
+                      <th className="p-2 text-left w-24">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map(it => (
-                      <tr key={it._id} className="border-b">
+                      <tr key={it._id} className="border-b hover:bg-gray-50">
                         <td className="p-2">
                           {it.images && it.images[0] ? (
-                            <Image src={it.images[0]} alt={it.name} width={48} height={48} className="object-cover rounded" />
-                          ) : <div className="w-12 h-12 bg-gray-100 rounded" />}
+                            <Image src={it.images[0]} alt={it.name} width={50} height={50} className="object-cover rounded" />
+                          ) : <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                            <FiImage className="text-gray-400" />
+                          </div>}
                         </td>
                         <td className="p-2 font-medium">{it.name}</td>
-                        <td className="p-2">{it.category}</td>
-                        <td className="p-2">₦{Number(it.basePrice || 0).toFixed(2)}</td>
-                        <td className="p-2">{getTotalQuantity(it.variants)}</td>
+                        <td className="p-2 text-gray-600">{it.category || '-'}</td>
+                        <td className="p-2 font-medium">₦{Number(it.basePrice || 0).toFixed(2)}</td>
+                        <td className="p-2 text-center">{getTotalQuantity(it.variants)}</td>
                         <td className="p-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${it.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            it.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {it.status === 'available' ? <FiCheckCircle className="w-3 h-3" /> : <FiXCircle className="w-3 h-3" />}
                             {it.status}
                           </span>
                         </td>
                         <td className="p-2">
-                          <button onClick={() => edit(it)} className="p-2"><FiEdit2 /></button>
-                          <button onClick={() => del(it._id)} className="p-2 text-red-600"><FiTrash /></button>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => edit(it)} className="p-2 hover:bg-gray-100 rounded text-blue-600" title="Edit"><FiEdit2 /></button>
+                            <button onClick={() => del(it._id)} className="p-2 hover:bg-gray-100 rounded text-red-600" title="Delete"><FiTrash /></button>
+                          </div>
                         </td>
                       </tr>
                     ))}

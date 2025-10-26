@@ -24,6 +24,7 @@ const OrderSchema = new Schema({
   },
   items: [ItemSchema],
   paid: { type: Boolean, default: false },
+  status: { type: String, enum: ['pending', 'preparing', 'ready', 'delivered'], default: 'pending' },
   source: String,
   paystack_reference: String,
   paystack_transaction_id: String,

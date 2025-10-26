@@ -185,137 +185,12 @@ export default function AdminOrdersPage() {
             <p>Loading orders...</p>
           </div>
         </div>
-          {/* Selected Order Modal */}
-          {selectedOrder && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-lg shadow max-w-2xl w-full mx-4 p-6 md:p-8 md:mx-0 md:w-3/4 lg:w-1/2 h-auto max-h-[90vh] overflow-auto sm:mx-2">
-                {loadingOrderDetails ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand)]"></div>
-                    <span className="ml-3">Loading order details...</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-start justify-between mb-4">
-                      <h2 className="text-lg font-semibold">Order Details — #{selectedOrder.reference}</h2>
-                      <button onClick={() => setSelectedOrder(null)} className="text-gray-500 hover:text-gray-700 text-xl font-bold">&times;</button>
-                    </div>
-
-                    {/* Order Progress Tracker */}
-                    <div className="mb-6 bg-gray-50 rounded-lg p-4">
-                      <h3 className="font-medium mb-3">Order Progress</h3>
-                      <div className="space-y-3">
-                        {getStatusSteps(selectedOrder.status || 'pending').map((step) => {
-                          const Icon = step.icon;
-                          return (
-                            <div key={step.key} className="flex items-center gap-3">
-                              <div className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                                step.completed 
-                                  ? 'bg-[var(--brand)] border-[var(--brand)] text-white' 
-                                  : step.active
-                                  ? 'border-[var(--brand)] text-[var(--brand)] bg-white'
-                                  : 'border-gray-300 text-gray-400 bg-white'
-                              }`}>
-                                <Icon className="w-4 h-4" />
-                              </div>
-                              <div className="flex-1">
-                                <p className={`text-sm font-medium ${step.completed || step.active ? 'text-gray-900' : 'text-gray-400'}`}>
-                                  {step.label}
-                                </p>
-                              </div>
-                              {step.completed && (
-                                <div className="text-green-600 text-xs font-medium">
-                                  ✓ Complete
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="font-medium mb-2">Customer Information</h3>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-700"><span className="font-medium">Name:</span> {selectedOrder.customer?.name || 'N/A'}</p>
-                          <p className="text-sm text-gray-700"><span className="font-medium">Email:</span> {selectedOrder.customer?.email}</p>
-                          <p className="text-sm text-gray-700"><span className="font-medium">Phone:</span> {selectedOrder.customer?.phone}</p>
-                          <p className="text-sm text-gray-700"><span className="font-medium">Address:</span> {selectedOrder.customer?.address}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium mb-2">Order Summary</h3>
-                        <p className="text-sm text-gray-700">Items: {selectedOrder.items?.length || 0}</p>
-                        <p className="text-sm text-gray-700 font-semibold">Total: ₦{(selectedOrder.amount || 0).toFixed(2)}</p>
-                        <p className="text-sm text-gray-700">Date: {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
-                        <div className="mt-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
-                          <select 
-                            value={selectedOrder.status || 'pending'} 
-                            onChange={(e) => { 
-                              updateOrderStatus(selectedOrder._id, e.target.value); 
-                              setSelectedOrder({ ...selectedOrder, status: e.target.value }); 
-                            }} 
-                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-[var(--brand)]"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="preparing">Preparing</option>
-                            <option value="ready">Ready for Pickup/Delivery</option>
-                            <option value="delivered">Delivered</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-6">
-                      <h3 className="font-medium mb-3">Items to Package</h3>
-                      <div className="mt-2 space-y-2">
-                        {selectedOrder.resolvedItems && selectedOrder.resolvedItems.length > 0 ? (
-                          selectedOrder.resolvedItems.map((item, idx) => (
-                            <div key={idx} className="flex items-start gap-3 border-b py-2">
-                              {item.productImage && (
-                                <Image src={item.productImage} alt={item.productName} width={64} height={64} className="object-cover rounded" />
-                              )}
-                              <div className="flex-1">
-                                <div className="font-medium">{item.productName}</div>
-                                <div className="text-sm text-gray-500">
-                                  {item.variant ? (
-                                    <>Size: {item.variant.size} / Color: {item.variant.color}</>
-                                  ) : (
-                                    <>{item.size && `Size: ${item.size}`} {item.color && `/ Color: ${item.color}`}</>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600">Qty: {item.qty || item.quantity || 1}</div>
-                              </div>
-                              <div className="text-sm font-medium">₦{(item.price || 0).toFixed(2)}</div>
-                            </div>
-                          ))
-                        ) : (
-                          (selectedOrder.items || []).map((it, idx) => (
-                            <div key={idx} className="flex items-center justify-between border-b py-2">
-                              <div>
-                                <div className="font-medium">{it.title || it.name || it.productName || 'Unknown product'}</div>
-                                <div className="text-sm text-gray-500">{it.size ? `${it.size} / ${it.color}` : (it.color || '')}</div>
-                              </div>
-                              <div className="text-sm">{(it.qty || it.quantity || 1)} x ₦{(it.price || 0).toFixed(2)}</div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <button onClick={() => setSelectedOrder(null)} className="px-4 py-2 bg-gray-100 rounded">Close</button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
+      </section>
     );
   }
 
   return (
+    <>
     <section className="flex-1 p-8">
       {/* Toast Notification */}
       {toast && (
@@ -501,6 +376,133 @@ export default function AdminOrdersPage() {
           </>
         )}
       </div>
+
+      {/* Selected Order Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow max-w-2xl w-full mx-4 p-6 md:p-8 md:mx-0 md:w-3/4 lg:w-1/2 h-auto max-h-[90vh] overflow-auto sm:mx-2">
+            {loadingOrderDetails ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--brand)]"></div>
+                <span className="ml-3">Loading order details...</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-start justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Order Details — #{selectedOrder.reference}</h2>
+                  <button onClick={() => setSelectedOrder(null)} className="text-gray-500 hover:text-gray-700 text-xl font-bold">&times;</button>
+                </div>
+
+                {/* Order Progress Tracker */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-medium mb-3">Order Progress</h3>
+                  <div className="space-y-3">
+                    {getStatusSteps(selectedOrder.status || 'pending').map((step) => {
+                      const Icon = step.icon;
+                      return (
+                        <div key={step.key} className="flex items-center gap-3">
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                            step.completed 
+                              ? 'bg-[var(--brand)] border-[var(--brand)] text-white' 
+                              : step.active
+                              ? 'border-[var(--brand)] text-[var(--brand)] bg-white'
+                              : 'border-gray-300 text-gray-400 bg-white'
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className={`text-sm font-medium ${step.completed || step.active ? 'text-gray-900' : 'text-gray-400'}`}>
+                              {step.label}
+                            </p>
+                          </div>
+                          {step.completed && (
+                            <div className="text-green-600 text-xs font-medium">
+                              ✓ Complete
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-medium mb-2">Customer Information</h3>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-700"><span className="font-medium">Name:</span> {selectedOrder.customer?.name || 'N/A'}</p>
+                      <p className="text-sm text-gray-700"><span className="font-medium">Email:</span> {selectedOrder.customer?.email}</p>
+                      <p className="text-sm text-gray-700"><span className="font-medium">Phone:</span> {selectedOrder.customer?.phone}</p>
+                      <p className="text-sm text-gray-700"><span className="font-medium">Address:</span> {selectedOrder.customer?.address}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Order Summary</h3>
+                    <p className="text-sm text-gray-700">Items: {selectedOrder.items?.length || 0}</p>
+                    <p className="text-sm text-gray-700 font-semibold">Total: ₦{(selectedOrder.amount || 0).toFixed(2)}</p>
+                    <p className="text-sm text-gray-700">Date: {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
+                      <select 
+                        value={selectedOrder.status || 'pending'} 
+                        onChange={(e) => { 
+                          updateOrderStatus(selectedOrder._id, e.target.value);
+                        }} 
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-[var(--brand)]"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="ready">Ready for Pickup/Delivery</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <h3 className="font-medium mb-3">Items to Package</h3>
+                  <div className="mt-2 space-y-2">
+                    {selectedOrder.resolvedItems && selectedOrder.resolvedItems.length > 0 ? (
+                      selectedOrder.resolvedItems.map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 border-b py-2">
+                          {item.productImage && (
+                            <Image src={item.productImage} alt={item.productName} width={64} height={64} className="object-cover rounded" />
+                          )}
+                          <div className="flex-1">
+                            <div className="font-medium">{item.productName}</div>
+                            <div className="text-sm text-gray-500">
+                              {item.variant ? (
+                                <>Size: {item.variant.size} / Color: {item.variant.color}</>
+                              ) : (
+                                <>{item.size && `Size: ${item.size}`} {item.color && `/ Color: ${item.color}`}</>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">Qty: {item.qty || item.quantity || 1}</div>
+                          </div>
+                          <div className="text-sm font-medium">₦{(item.price || 0).toFixed(2)}</div>
+                        </div>
+                      ))
+                    ) : (
+                      (selectedOrder.items || []).map((it, idx) => (
+                        <div key={idx} className="flex items-center justify-between border-b py-2">
+                          <div>
+                            <div className="font-medium">{it.title || it.name || it.productName || 'Unknown product'}</div>
+                            <div className="text-sm text-gray-500">{it.size ? `${it.size} / ${it.color}` : (it.color || '')}</div>
+                          </div>
+                          <div className="text-sm">{(it.qty || it.quantity || 1)} x ₦{(it.price || 0).toFixed(2)}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button onClick={() => setSelectedOrder(null)} className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">Close</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </section>
+    </>
   );
 }
