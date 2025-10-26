@@ -50,7 +50,7 @@ async function handlePasswordResetRequest(email) {
   // Check if admin exists
   let admin = null;
   if (Admin) {
-    admin = await Admin.findOne({ email }).lean().exec();
+    admin = await Admin.findOne({ email });
   } else {
     const db = await getDb();
     admin = await db.collection('admins').findOne({ email });
@@ -69,8 +69,6 @@ async function handlePasswordResetRequest(email) {
 
   // Save reset token to database (model or native)
   if (Admin) {
-    await Admin.updateOne({ email }, { $set: { resetToken, resetTokenExpiry } }).exec?.();
-    // If updateOne doesn't return exec, call without it
     await Admin.updateOne({ email }, { $set: { resetToken, resetTokenExpiry } });
   } else {
     const db = await getDb();
@@ -124,7 +122,7 @@ async function handlePasswordReset(token, newPassword) {
 
   let admin = null;
   if (Admin) {
-    admin = await Admin.findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } }).lean().exec();
+    admin = await Admin.findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } });
   } else {
     const db = await getDb();
     admin = await db.collection('admins').findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } });
@@ -178,7 +176,7 @@ async function handleTokenValidation(token) {
 
   let admin = null;
   if (Admin) {
-    admin = await Admin.findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } }).lean().exec();
+    admin = await Admin.findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } });
   } else {
     const db = await getDb();
     admin = await db.collection('admins').findOne({ resetToken: token, resetTokenExpiry: { $gt: new Date() } });

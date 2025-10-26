@@ -8,7 +8,7 @@ const links = [
   { name: 'Orders', href: '/admin/orders', icon: FiPackage },
   { name: 'Products', href: '/admin/products', icon: FiList },
   { name: 'Announcements', href: '/admin/announcements', icon: FiBell },
-  { name: 'Riders', href: '/admin/riders', icon: FiUsers },
+  { name: 'Staff', href: '/admin/staff', icon: FiUsers },
 ];
 
 export default function AdminSidebar({ active }) {
