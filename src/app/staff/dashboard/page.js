@@ -55,7 +55,7 @@ export default function StaffDashboard() {
         <h1 className="text-3xl font-bold text-gray-800">
           Welcome back, {staffData?.name || 'Staff'}! 👋
         </h1>
-        <p className="text-gray-600 mt-2">Here's what's happening with your orders today.</p>
+        <p className="text-gray-600 mt-2">Here&#39;s what&#39;s happening with your orders today.</p>
       </div>
 
       {/* Statistics Cards */}
