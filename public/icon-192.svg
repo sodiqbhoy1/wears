@@ -1,0 +1,38 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CA2C33" />
+      <stop offset="100%" stop-color="#A01E24" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="96" cy="96" r="88" fill="url(#bgGradient)" stroke="white" stroke-width="8"/>
+  
+  <!-- Central food icon - stylized plate with steam -->
+  <g transform="translate(96, 70)">
+    <!-- Plate -->
+    <ellipse cx="0" cy="30" rx="40" ry="12" fill="white" opacity="0.9"/>
+    <ellipse cx="0" cy="26" rx="36" ry="10" fill="white"/>
+    
+    <!-- Food on plate -->
+    <circle cx="-16" cy="20" r="6" fill="#FF6B35"/>
+    <circle cx="0" cy="16" r="8" fill="#FFD23F"/>
+    <circle cx="16" cy="20" r="6" fill="#FF6B35"/>
+    
+    <!-- Steam lines -->
+    <path d="M -24 10 Q -20 0 -24 -10" stroke="white" stroke-width="4" fill="none" opacity="0.7"/>
+    <path d="M 0 6 Q 4 -4 0 -14" stroke="white" stroke-width="4" fill="none" opacity="0.7"/>
+    <path d="M 24 10 Q 28 0 24 -10" stroke="white" stroke-width="4" fill="none" opacity="0.7"/>
+  </g>
+  
+  <!-- Letters F and J -->
+  <text x="60" y="150" font-size="48" font-weight="bold" fill="white" font-family="Arial, sans-serif">F</text>
+  <text x="116" y="150" font-size="48" font-weight="bold" fill="white" font-family="Arial, sans-serif">J</text>
+  
+  <!-- Small decorative dots -->
+  <circle cx="40" cy="50" r="4" fill="white" opacity="0.5"/>
+  <circle cx="160" cy="70" r="3" fill="white" opacity="0.5"/>
+  <circle cx="50" cy="160" r="3" fill="white" opacity="0.5"/>
+  <circle cx="150" cy="150" r="4" fill="white" opacity="0.5"/>
+</svg>
